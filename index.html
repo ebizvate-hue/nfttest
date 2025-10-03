@@ -1,17 +1,76 @@
-
+<!doctype html>
 <html>
-  <head>
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <script src="https://cdn.jsdelivr.net/gh/hiukim/mind-ar-js@1.2.5/dist/mindar-image.prod.js"></script>
-    <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/gh/hiukim/mind-ar-js@1.2.5/dist/mindar-image-aframe.prod.js"></script>
-  </head>
-  <body>
-    <a-scene mindar-image="imageTargetSrc: ./targets.mind;" vr-mode-ui="enabled: false" device-orientation-permission-ui="enabled: false">
-      <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
-      <a-entity mindar-image-target="targetIndex: 0">
-        <a-plane color="blue" opaciy="0.5" position="0 0 0" height="0.552" width="1" rotation="0 0 0"></a-plane>
-      </a-entity>
-    </a-scene>
-  </body>
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>AR Demo - Carcar Video</title>
+
+  <!-- A-Frame -->
+  <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
+  <!-- MindAR A-Frame build (CDN) -->
+  <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-aframe.prod.js"></script>
+
+  <style>
+    body, html { margin:0; height:100%; overflow:hidden; }
+    #startBtn {
+      position: absolute; z-index: 3; left:50%; top:10px; transform:translateX(-50%);
+      padding:10px 20px; font-size:16px;
+    }
+  </style>
+</head>
+<body>
+  <!-- دکمه شروع برای رفع محدودیت autoplay -->
+  <button id="startBtn">Start AR</button>
+
+  <a-scene
+    mindar-image="imageTargetSrc: aksmind.mind; maxTrack: 1;"
+    embedded
+    color-space="sRGB"
+    vr-mode-ui="enabled: false"
+    device-orientation-permission-ui="enabled: false"
+  >
+    <a-assets>
+      <!-- ویدیوی Carcar -->
+      <video id="arVideo" src="Carcar.mp4" preload="auto" loop playsinline webkit-playsinline crossorigin="anonymous"></video>
+    </a-assets>
+
+    <!-- دوربین -->
+    <a-entity camera></a-entity>
+
+    <!-- targetIndex: 0 یعنی اولین تصویر داخل aksmind.mind -->
+    <a-entity mindar-image-target="targetIndex: 0">
+      <!-- صفحه‌ای برای نمایش ویدیو -->
+      <a-plane id="videoPlane" position="0 0 0" rotation="-90 0 0" width="1" height="0.6"
+               material="shader: flat; src: #arVideo;"></a-plane>
+    </a-entity>
+
+  </a-scene>
+
+  <script>
+    const startBtn = document.getElementById('startBtn');
+    const video = document.getElementById('arVideo');
+
+    startBtn.addEventListener('click', async () => {
+      // تعامل اول کاربر برای آزاد کردن autoplay
+      try { await video.play(); video.pause(); } catch(e){ /* ignore */ }
+
+      // راه‌اندازی MindAR
+      const scene = document.querySelector('a-scene');
+      const mindarComponent = scene.components['mindar-image'];
+      await mindarComponent.start();
+
+      // مخفی کردن دکمه شروع
+      startBtn.style.display = 'none';
+
+      // رویدادها: وقتی تصویر دیده شد => play / وقتی گم شد => pause
+      const targetEntity = document.querySelector('[mindar-image-target]');
+      targetEntity.addEventListener('targetFound', () => {
+        video.play().catch(()=>{});
+      });
+      targetEntity.addEventListener('targetLost', () => {
+        video.pause();
+      });
+    });
+  </script>
+</body>
 </html>
