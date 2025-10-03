@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>AR NFT Video</title>
+    <script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
+    <script src="https://cdn.rawgit.com/AR-js-org/AR.js/master/aframe/build/aframe-ar-nft.js"></script>
+  </head>
+  <body style="margin: 0; overflow: hidden;">
+    <a-scene
+      vr-mode-ui="enabled: false;"
+      embedded
+      arjs="trackingMethod: best; sourceType: webcam; debugUIEnabled: false;"
+    >
+      <!-- ویدیو به عنوان asset -->
+      <a-assets>
+        <video id="carVideo" src="Carcar.mp4" preload="auto" muted loop webkit-playsinline playsinline crossorigin="anonymous"></video>
+      </a-assets>
+
+      <!-- NFT Marker (عکس aksaks) -->
+      <a-nft
+        type="nft"
+        url="aksaks"
+        smooth="true"
+        smoothCount="10"
+        smoothTolerance="0.01"
+        smoothThreshold="5"
+        id="nftMarker"
+      >
+        <a-video
+          src="#carVideo"
+          width="1.6"
+          height="0.9"
+          position="0 0 0"
+          rotation="-90 0 0"
+        ></a-video>
+      </a-nft>
+
+      <a-entity camera></a-entity>
+    </a-scene>
+
+    <script>
+      const nftMarker = document.querySelector("#nftMarker");
+      const video = document.querySelector("#carVideo");
+
+      nftMarker.addEventListener("markerFound", () => {
+        video.play();
+      });
+
+      nftMarker.addEventListener("markerLost", () => {
+        video.pause();
+        video.currentTime = 0;
+      });
+    </script>
+  </body>
+</html>
