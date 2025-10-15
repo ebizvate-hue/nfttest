@@ -1,22 +1,35 @@
 <!DOCTYPE html>
-<html lang="fa" dir="rtl">
+<html>
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AR Image Tracking</title>
-    <script src="https://cdn.jsdelivr.net/gh/hiukim/mind-ar-js@1.2.2/dist/mindar-image.prod.js"></script>
     <script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/gh/hiukim/mind-ar-js@1.2.2/dist/mindar-image-aframe.prod.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.2/dist/mindar-image-aframe.prod.js"></script>
     <style>
         body {
             margin: 0;
             overflow: hidden;
         }
+        #loading {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 20px;
+            color: white;
+            background: rgba(0,0,0,0.7);
+            padding: 20px;
+            border-radius: 10px;
+            z-index: 9999;
+        }
     </style>
 </head>
 <body>
+    <div id="loading">در حال بارگذاری...</div>
+
     <a-scene
-        mindar-image="imageTargetSrc: aksmind.mind; autoStart: true; uiScanning: yes; uiLoading: yes;"
+        mindar-image="imageTargetSrc: ./aksmind.mind;"
         color-space="sRGB"
         renderer="colorManagement: true, physicallyCorrectLights"
         vr-mode-ui="enabled: false"
@@ -24,13 +37,13 @@
         
         <a-assets>
             <video
-                id="video"
-                src="Carcar.mp4"
+                id="vid"
+                src="./Carcar.mp4"
                 preload="auto"
-                loop="true"
-                crossorigin="anonymous"
+                loop
                 playsinline
-                webkit-playsinline>
+                webkit-playsinline
+                muted>
             </video>
         </a-assets>
 
@@ -38,33 +51,49 @@
 
         <a-entity mindar-image-target="targetIndex: 0">
             <a-video
-                src="#video"
+                src="#vid"
                 width="1"
                 height="1"
-                position="0 0 0"
-                play-on-tracking>
+                position="0 0 0">
             </a-video>
         </a-entity>
     </a-scene>
 
     <script>
-        AFRAME.registerComponent('play-on-tracking', {
-            init: function() {
-                const video = this.el.getAttribute('src');
-                const videoEl = document.querySelector(video);
-                
-                this.el.sceneEl.addEventListener('targetFound', (event) => {
-                    if (videoEl) {
-                        videoEl.play();
-                    }
-                });
+        // حذف loading بعد از بارگذاری
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                const loading = document.getElementById('loading');
+                if (loading) loading.style.display = 'none';
+            }, 3000);
+        });
 
-                this.el.sceneEl.addEventListener('targetLost', (event) => {
-                    if (videoEl) {
-                        videoEl.pause();
-                    }
-                });
+        // مدیریت پخش ویدیو
+        const sceneEl = document.querySelector('a-scene');
+        const video = document.getElementById('vid');
+
+        sceneEl.addEventListener('targetFound', event => {
+            console.log('Target found!');
+            if (video) {
+                video.play().catch(err => console.log('Play error:', err));
             }
+        });
+
+        sceneEl.addEventListener('targetLost', event => {
+            console.log('Target lost!');
+            if (video) {
+                video.pause();
+            }
+        });
+
+        // چک کردن خطاها
+        sceneEl.addEventListener('arError', (event) => {
+            console.error('AR Error:', event);
+            alert('خطا در بارگذاری AR');
+        });
+
+        sceneEl.addEventListener('arReady', (event) => {
+            console.log('AR Ready!');
         });
     </script>
 </body>
