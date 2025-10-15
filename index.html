@@ -23,10 +23,21 @@
             border-radius: 10px;
             z-index: 9999;
         }
+        #watermark {
+            position: fixed;
+            bottom: 10px;
+            left: 10px;
+            font-size: 12px;
+            color: white;
+            font-family: Arial, sans-serif;
+            z-index: 9998;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.8);
+        }
     </style>
 </head>
 <body>
     <div id="loading">در حال بارگذاری...</div>
+    <div id="watermark">@asher.frame</div>
 
     <a-scene
         mindar-image="imageTargetSrc: ./aksmind.mind;"
@@ -74,7 +85,7 @@
         sceneEl.addEventListener('targetFound', event => {
             console.log('Target found!');
             if (video) {
-                video.muted = false; // فعال کردن صدا
+                video.muted = false;
                 video.play().catch(err => console.log('Play error:', err));
             }
         });
@@ -98,4 +109,3 @@
     </script>
 </body>
 </html>
-
