@@ -42,8 +42,7 @@
                 preload="auto"
                 loop
                 playsinline
-                webkit-playsinline
-                muted>
+                webkit-playsinline>
             </video>
         </a-assets>
 
@@ -53,7 +52,7 @@
             <a-video
                 src="#vid"
                 width="1"
-                height="1"
+                height="0.5625"
                 position="0 0 0">
             </a-video>
         </a-entity>
@@ -75,6 +74,7 @@
         sceneEl.addEventListener('targetFound', event => {
             console.log('Target found!');
             if (video) {
+                video.muted = false; // فعال کردن صدا
                 video.play().catch(err => console.log('Play error:', err));
             }
         });
