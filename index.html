@@ -1,77 +1,71 @@
-<!doctype html>
-<html>
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>AR Demo - Carcar Video</title>
-
-  <!-- A-Frame -->
-  <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
-  <!-- MindAR A-Frame build (CDN) -->
-  <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-aframe.prod.js"></script>
-
-  <style>
-    body, html { margin:0; height:100%; overflow:hidden; }
-    #startBtn {
-      position: absolute; z-index: 3; left:50%; top:10px; transform:translateX(-50%);
-      padding:10px 20px; font-size:16px;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content width=device-width, initial-scale=1.0">
+    <title>AR Image Tracking</title>
+    <script src="https://cdn.jsdelivr.net/gh/hiukim/mind-ar-js@1.2.2/dist/mindar-image.prod.js"></script>
+    <script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/gh/hiukim/mind-ar-js@1.2.2/dist/mindar-image-aframe.prod.js"></script>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+        }
+    </style>
 </head>
 <body>
-  <!-- دکمه شروع برای رفع محدودیت autoplay -->
-  <button id="startBtn">Start AR</button>
+    <a-scene
+        mindar-image="imageTargetSrc: aksmind.mind; autoStart: true; uiScanning: yes; uiLoading: yes;"
+        color-space="sRGB"
+        renderer="colorManagement: true, physicallyCorrectLights"
+        vr-mode-ui="enabled: false"
+        device-orientation-permission-ui="enabled: false">
+        
+        <a-assets>
+            <video
+                id="video"
+                src="Carcar.mp4"
+                preload="auto"
+                loop="true"
+                crossorigin="anonymous"
+                playsinline
+                webkit-playsinline>
+            </video>
+        </a-assets>
 
-  <a-scene
-    mindar-image="imageTargetSrc: aksmind.mind; maxTrack: 1;"
-    embedded
-    color-space="sRGB"
-    vr-mode-ui="enabled: false"
-    device-orientation-permission-ui="enabled: false"
-  >
-    <a-assets>
-      <!-- ویدیوی Carcar -->
-      <video id="arVideo" src="Carcar.mp4" preload="auto" loop playsinline webkit-playsinline crossorigin="anonymous"></video>
-    </a-assets>
+        <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
 
-    <!-- دوربین -->
-    <a-entity camera></a-entity>
+        <a-entity mindar-image-target="targetIndex: 0">
+            <a-video
+                src="#video"
+                width="1"
+                height="1"
+                position="0 0 0"
+                play-on-tracking>
+            </a-video>
+        </a-entity>
+    </a-scene>
 
-    <!-- targetIndex: 0 یعنی اولین تصویر داخل aksmind.mind -->
-    <a-entity mindar-image-target="targetIndex: 0">
-      <!-- صفحه‌ای برای نمایش ویدیو -->
-      <a-plane id="videoPlane" position="0 0 0" rotation="-90 0 0" width="1" height="1"
-               material="shader: flat; src: #arVideo;"></a-plane>
-    </a-entity>
+    <script>
+        AFRAME.registerComponent('play-on-tracking', {
+            init: function() {
+                const video = this.el.getAttribute('src');
+                const videoEl = document.querySelector(video);
+                
+                this.el.sceneEl.addEventListener('targetFound', (event) => {
+                    if (videoEl) {
+                        videoEl.play();
+                    }
+                });
 
-  </a-scene>
-
-  <script>
-    const startBtn = document.getElementById('startBtn');
-    const video = document.getElementById('arVideo');
-
-    startBtn.addEventListener('click', async () => {
-      // تعامل اول کاربر برای آزاد کردن autoplay
-      try { await video.play(); video.pause(); } catch(e){ /* ignore */ }
-
-      // راه‌اندازی MindAR
-      const scene = document.querySelector('a-scene');
-      const mindarComponent = scene.components['mindar-image'];
-      await mindarComponent.start();
-
-      // مخفی کردن دکمه شروع
-      startBtn.style.display = 'none';
-
-      // رویدادها: وقتی تصویر دیده شد => play / وقتی گم شد => pause
-      const targetEntity = document.querySelector('[mindar-image-target]');
-      targetEntity.addEventListener('targetFound', () => {
-        video.play().catch(()=>{});
-      });
-      targetEntity.addEventListener('targetLost', () => {
-        video.pause();
-      });
-    });
-  </script>
+                this.el.sceneEl.addEventListener('targetLost', (event) => {
+                    if (videoEl) {
+                        videoEl.pause();
+                    }
+                });
+            }
+        });
+    </script>
 </body>
 </html>
-
